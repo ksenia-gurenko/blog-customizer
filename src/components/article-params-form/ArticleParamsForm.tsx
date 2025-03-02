@@ -7,70 +7,52 @@ import {
 	backgroundColors,
 	contentWidthArr,
 	defaultArticleState,
+	ArticleStateType,
 } from 'src/constants/articleProps';
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
 import React, { useState, useRef } from 'react';
 import { useOutsideClickClose } from '../../ui/select/hooks/useOutsideClickClose';
-import { useEnterSubmit } from '../../ui/select/hooks/useEnterSubmit';
 import { Select } from '../../ui/select';
 import { RadioGroup } from '../../ui/radio-group';
 import { Separator } from '../../ui/separator';
 import { Text } from '../../ui/text';
 
 type ArticleParamsFormProps = {
-	btnReset: () => void; // Пропс-функция для сброса настроек
-	btnApply: (params: typeof defaultArticleState) => void; // Пропс-функция для применения настроек
+	setArticleParams: (params: ArticleStateType) => void;
+	initialValues?: ArticleStateType;
 };
 
-// объявление функционального компонента ArticleParamsForm
 export const ArticleParamsForm = ({
-	btnReset,
-	btnApply,
+	setArticleParams,
+	initialValues = defaultArticleState,
 }: ArticleParamsFormProps) => {
-	// Создание состояния isMenuOpen для управления видимостью меню
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-	// Создание состояния selectedBackgroundColor для хранения выбранного цвета фона
 	const [selectedBackgroundColor, setBackgroundColor] = useState(
-		defaultArticleState.backgroundColor
+		initialValues.backgroundColor
 	);
-
-	// Создание состояния selectedFont для хранения выбранного шрифта
 	const [selectedFont, setSelectedFont] = useState(
-		defaultArticleState.fontFamilyOption
+		initialValues.fontFamilyOption
 	);
-
-	// Создание состояния selectedFontColor для хранения выбранного цвета шрифта
 	const [selectedFontColor, setSelectedFontColor] = useState(
-		defaultArticleState.fontColor
+		initialValues.fontColor
 	);
-
-	// Создание состояния selectedFontSize для хранения выбранного размера шрифта
 	const [selectedFontSize, setSelectedFontSize] = useState(
-		defaultArticleState.fontSizeOption
+		initialValues.fontSizeOption
 	);
-
-	// Создание состояния selectedContentWidth для хранения выбранной ширины контента
 	const [selectedContentWidth, setContentWidth] = useState(
-		defaultArticleState.contentWidth
+		initialValues.contentWidth
 	);
-
-	// Создание двух реф-ссылок для работы с DOM-элементами
-	const placeholderRef = useRef<HTMLDivElement | null>(null);
 	const ref = useRef<HTMLDivElement | null>(null);
 
-	// Функция для переключения состояния меню (открыто/закрыто)
 	const toggleMenu = () => {
 		setIsMenuOpen(!isMenuOpen);
 	};
 
-	// Функция для закрытия меню
 	const closeMenu = () => {
 		setIsMenuOpen(false);
 	};
 
-	// Использование хука useOutsideClickClose для закрытия меню при клике вне элемента
 	useOutsideClickClose({
 		isOpen: isMenuOpen,
 		rootRef: ref,
@@ -78,40 +60,28 @@ export const ArticleParamsForm = ({
 		onChange: setIsMenuOpen,
 	});
 
-	// Использование хука useEnterSubmit для отправки формы по нажатию Enter
-	useEnterSubmit({
-		placeholderRef,
-		onChange: setIsMenuOpen,
-	});
-
-	// Функция для сброса всех настроек до значений по умолчанию
-	const handleReset = () => {
-		setBackgroundColor(defaultArticleState.backgroundColor);
-		setContentWidth(defaultArticleState.contentWidth);
-		setSelectedFont(defaultArticleState.fontFamilyOption);
-		setSelectedFontSize(defaultArticleState.fontSizeOption);
-		setSelectedFontColor(defaultArticleState.fontColor);
-		btnReset(); // Вызывается внешняя функция сброса настроек
+	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setArticleParams({
+			backgroundColor: selectedBackgroundColor,
+			contentWidth: selectedContentWidth,
+			fontFamilyOption: selectedFont,
+			fontSizeOption: selectedFontSize,
+			fontColor: selectedFontColor,
+		});
+		setIsMenuOpen(false);
 	};
 
-	// Функция для отправки формы и применения новых настроек
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault(); // Предотвращение стандартной отправки формы
-		if (btnApply) {
-			btnApply({
-				// Передача текущих настроек внешней функции btnApply
-				backgroundColor: selectedBackgroundColor,
-				contentWidth: selectedContentWidth,
-				fontFamilyOption: selectedFont,
-				fontSizeOption: selectedFontSize,
-				fontColor: selectedFontColor,
-			});
-		}
-		setIsMenuOpen(false); // Закрытие меню после отправки формы
+	const handleReset = () => {
+		setBackgroundColor(initialValues.backgroundColor);
+		setContentWidth(initialValues.contentWidth);
+		setSelectedFont(initialValues.fontFamilyOption);
+		setSelectedFontSize(initialValues.fontSizeOption);
+		setSelectedFontColor(initialValues.fontColor);
+		setArticleParams(initialValues);
 	};
 
 	// Возвращение JSX-разметки
-
 	return (
 		<>
 			<div>
